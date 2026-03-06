@@ -246,12 +246,12 @@ export default function NewsView() {
           tools: [{
             type: 'web_search_20250305',
             name: 'web_search',
-            max_uses: 5,
+            max_uses: 2,
           }],
-          system: `Financial research assistant. Search for recent news about portfolio companies. Return JSON only: {"articles":[{"title":"...","summary":"...","company":"...","category":"...","source":"...","date":"YYYY-MM-DD","sentiment":"positive|neutral|negative","url":"..."}]}. Categories: Company News, Competitor Activity, End Market Trends, M&A, Earnings. Return 8-10 articles.`,
+          system: `Search for recent news about the companies listed. Return ONLY valid JSON: {"articles":[{"title":"...","summary":"1-2 sentences","company":"...","category":"Company News|Competitor Activity|End Market Trends|M&A|Earnings","source":"...","date":"YYYY-MM-DD","sentiment":"positive|neutral|negative","url":"..."}]}. Return 5-6 articles.`,
           messages: [{
             role: 'user',
-            content: `Recent news about: ${companyNames.join(', ')}. Focus: ${categoryFilter.join(', ')}.`,
+            content: `News about: ${companyNames.join(', ')}. Topics: ${categoryFilter.join(', ')}.`,
           }],
         }),
       });
