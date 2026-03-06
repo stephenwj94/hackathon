@@ -27,7 +27,7 @@ export default function TopBar() {
 
         <div className="flex items-center gap-3">
           <span className="text-xs text-permira-text-secondary uppercase tracking-widest">
-            Jan 2023 — Jun 2024
+            Updated as of {new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}
           </span>
         </div>
       </motion.header>

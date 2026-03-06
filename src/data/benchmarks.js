@@ -16,7 +16,7 @@ export const benchmarks = {
   rampedAEs: { label: 'Ramped AEs', unit: '', good: null, great: null },
   totalAEs: { label: 'Total AEs', unit: '', good: null, great: null },
   salesCapacityUtilization: { label: 'Sales Capacity', unit: '%', good: 70, great: 85 },
-  magicNumber: { label: 'Magic Number', unit: '', good: 0.75, great: 1.0, bestInClass: 1.0 },
+  magicNumber: { label: 'Sales & Marketing Efficiency', unit: '', good: 0.75, great: 1.0, bestInClass: 1.0 },
   cac: { label: 'CAC', unit: '$K', good: 50, great: 25, inverse: true },
   ltv: { label: 'LTV', unit: '$K', good: null, great: null },
   ltvCacRatio: { label: 'LTV/CAC', unit: 'x', good: 3, great: 5 },

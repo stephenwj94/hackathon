@@ -7,6 +7,7 @@ import Dashboard from './views/Dashboard';
 import BenchmarkView from './views/BenchmarkView';
 import CompanyProfile from './views/CompanyProfile';
 import UploadCenter from './views/UploadCenter';
+import NewsView from './views/NewsView';
 
 export default function App() {
   const { isAuthenticated, login } = useAuth();
@@ -23,6 +24,7 @@ export default function App() {
               <Route path="/benchmark" element={<BenchmarkView />} />
               <Route path="/company/:slug" element={<CompanyProfile />} />
               <Route path="/upload" element={<UploadCenter />} />
+              <Route path="/news" element={<NewsView />} />
             </Route>
           </Routes>
         </HashRouter>

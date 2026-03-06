@@ -5,6 +5,7 @@ const navItems = [
   { to: '/', icon: '◈', label: 'Dashboard' },
   { to: '/benchmark', icon: '◉', label: 'Benchmark' },
   { to: '/company/zendesk', icon: '◎', label: 'Companies' },
+  { to: '/news', icon: '◆', label: 'News' },
   { to: '/upload', icon: '◇', label: 'Upload' },
 ];
 

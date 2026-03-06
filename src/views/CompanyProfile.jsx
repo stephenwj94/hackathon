@@ -19,27 +19,27 @@ const trendSignals = {
   seismic: [
     'High-growth trajectory with ARR nearly doubling. NRR volatility (112-118%) suggests expansion potential but requires churn monitoring.',
     'Aggressive new logo acquisition driving bookings growth, but sales capacity utilization indicates the team is still ramping — watch for productivity gains in H2 2024.',
-    'Magic number trending upward as S&M efficiency improves with scale. CAC payback declining — positive unit economics trajectory.',
+    'Sales & marketing efficiency trending upward as S&M spend scales. CAC payback declining — positive unit economics trajectory.',
   ],
   mimecast: [
     'Mature profile with industry-leading gross retention (95-97%). Stable but low growth — opportunity to accelerate through product-led expansion.',
     'Low expansion rate constraining NRR to ~103%. Cross-sell and upsell initiatives should be prioritized to unlock value.',
     'High ACV and excellent retention create strong LTV/CAC ratios. Efficient but needs growth catalysts.',
   ],
-  lytix: [
+  lytx: [
     'Hyper-growth phase with NRR consistently above 115% — strongest expansion metrics in the portfolio.',
     'Rapid AE headcount growth (doubling over 18 months) with improving capacity utilization. Unit economics improving as team ramps.',
     'Lower ACV offset by high logo velocity. Consider moving upmarket to improve LTV and reduce CAC payback period.',
   ],
   octus: [
-    'Consistent mid-market compounding with magic number above 0.8 throughout. Best-in-class sales efficiency in the portfolio.',
+    'Consistent mid-market compounding with S&M efficiency above 0.8 throughout. Best-in-class sales efficiency in the portfolio.',
     'Balanced growth between new logos and expansion. NRR ~111% indicates healthy platform stickiness and expansion motion.',
     'Revenue per AE strong and improving — evidence of operating leverage as the business scales.',
   ],
   mcafee: [
     'Large-scale enterprise with high ACV driving strong LTV. Gross retention 94-96% is solid for the security segment.',
     'Flat new logo growth typical for enterprise scale. NRR ~105% driven primarily by price increases and cross-sell.',
-    'S&M spend efficiency could improve — magic number below portfolio average, but absolute ARR contribution is the largest.',
+    'S&M spend efficiency could improve — S&M efficiency ratio below portfolio average, but absolute ARR contribution is the largest.',
   ],
 };
 
@@ -59,7 +59,7 @@ export default function CompanyProfile() {
       { label: 'ARR', value: latest.arr, prefix: '$', suffix: 'M', trend: latest.arrGrowthMoM },
       { label: 'NRR', value: latest.netRevenueRetention, suffix: '%', trend: null },
       { label: 'Gross Retention', value: latest.grossRetentionRate, suffix: '%', trend: null },
-      { label: 'Magic Number', value: latest.magicNumber, decimals: 2, trend: null },
+      { label: 'Sales & Marketing Efficiency', value: latest.magicNumber, decimals: 2, trend: null },
       { label: 'LTV/CAC', value: latest.ltvCacRatio, suffix: 'x', trend: null },
       { label: 'Total AEs', value: latest.totalAEs, decimals: 0, trend: null },
     ];

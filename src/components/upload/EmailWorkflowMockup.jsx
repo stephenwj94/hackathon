@@ -8,7 +8,7 @@ const statuses = {
   zendesk: { status: 'Submitted', icon: '✓', color: 'text-permira-success' },
   seismic: { status: 'Pending', icon: '⏳', color: 'text-yellow-400' },
   mimecast: { status: 'Submitted', icon: '✓', color: 'text-permira-success' },
-  lytix: { status: 'Overdue', icon: '!', color: 'text-permira-danger' },
+  lytx: { status: 'Overdue', icon: '!', color: 'text-permira-danger' },
   octus: { status: 'Pending', icon: '⏳', color: 'text-yellow-400' },
   mcafee: { status: 'Submitted', icon: '✓', color: 'text-permira-success' },
 };

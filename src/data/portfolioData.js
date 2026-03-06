@@ -1,5 +1,5 @@
 // Portfolio data: 6 companies × 18 months (Jan 2023 – Jun 2024)
-// All numbers are internally consistent
+// Fixed dramatic trajectories for visually interesting charts
 
 const months = [
   '2023-01','2023-02','2023-03','2023-04','2023-05','2023-06',
@@ -7,371 +7,185 @@ const months = [
   '2024-01','2024-02','2024-03','2024-04','2024-05','2024-06',
 ];
 
+// Helper: build a month record from ARR and parameters
+function buildMonth(i, arr, prevArr, prevData, params) {
+  const { grrBase, grrVar, nrrBase, nrrVar, acvBase, acvVar, newLogosBase, newLogosVar,
+    totalAEsStart, totalAEsEnd, rampedBase, rampedVar, smBase, smVar, magicFloor } = params;
+
+  const grr = grrBase + Math.sin(i * 0.7) * grrVar;
+  const nrr = nrrBase + Math.sin(i * 0.9 + 1) * nrrVar;
+  const churn = 100 - grr;
+  const downSell = 0.5 + Math.sin(i * 0.5) * 0.3;
+  const acv = acvBase + Math.sin(i * 0.8) * acvVar;
+  const newLogos = Math.floor(newLogosBase + Math.sin(i * 0.6 + 2) * newLogosVar);
+  const newLogoBookings = Math.round(newLogos * acv);
+  const expansionRate = (nrr - 100 + churn) / 100;
+  const expansionBookings = Math.round(arr * expansionRate * 1000 / 12);
+  const totalBookings = newLogoBookings + expansionBookings;
+  const netNewArr = (totalBookings - arr * (churn / 100) * 1000 / 12) / 1000;
+  const totalAEs = Math.round(totalAEsStart + (totalAEsEnd - totalAEsStart) * i / 17);
+  const rampedRatio = rampedBase + Math.sin(i * 0.4) * rampedVar;
+  const rampedAEs = Math.round(totalAEs * rampedRatio);
+  const smSpend = Math.round(smBase + Math.sin(i * 0.3 + 1) * smVar);
+  const magicNumber = Math.max(magicFloor, Math.round(((netNewArr * 1000) / smSpend) * 100) / 100);
+  const cac = Math.round(smSpend / Math.max(1, newLogos));
+  const ltv = Math.round(acv * (1 / (churn / 100 / 12)) / 12);
+  const ltvCac = Math.round((ltv / cac) * 10) / 10;
+  const payback = Math.round(cac / (acv / 12));
+  const capacityUtil = Math.round(65 + Math.sin(i * 0.5) * 15);
+  const revenuePerAE = Math.round((arr * 1000) / totalAEs);
+
+  return {
+    month: months[i],
+    arr: Math.round(arr * 10) / 10,
+    arrGrowthMoM: i === 0 ? 1.5 : Math.round(((arr - prevArr) / prevArr) * 1000) / 10,
+    arrGrowthYoY: i < 12 ? null : Math.round(((arr - prevData[i - 12].arr) / prevData[i - 12].arr) * 1000) / 10,
+    newLogoBookings,
+    expansionBookings,
+    totalBookings,
+    bookingsGrowthMoM: i === 0 ? 2.0 : Math.round(((totalBookings - prevData[i - 1].totalBookings) / prevData[i - 1].totalBookings) * 1000) / 10,
+    grossRetentionRate: Math.round(grr * 10) / 10,
+    churnRate: Math.round(churn * 10) / 10,
+    downSellRate: Math.round(Math.abs(downSell) * 10) / 10,
+    netRevenueRetention: Math.round(nrr * 10) / 10,
+    expansionRate: Math.round(expansionRate * 1000) / 10,
+    acv: Math.round(acv),
+    newLogosCount: newLogos,
+    rampedAEs,
+    totalAEs,
+    salesCapacityUtilization: capacityUtil,
+    magicNumber,
+    cac,
+    ltv,
+    ltvCacRatio: ltvCac,
+    paybackPeriodMonths: payback,
+    smSpend,
+    revenuePerAE,
+  };
+}
+
 function generateZendesk() {
-  // Steady grower. ARR $480M→$620M. GRR 93-95%. NRR ~108%.
-  const base = {
-    arrStart: 480, arrEnd: 620,
-    grrRange: [93, 95], nrrRange: [106, 110],
-    acvRange: [42, 52], newLogosRange: [28, 42],
-    totalAEsStart: 145, totalAEsEnd: 168,
-    rampedRatio: [0.78, 0.85],
-    smSpendRange: [8200, 9800],
+  // Strong Q1 2023, dip in Q3 2023 (macro headwinds), sharp recovery Q1 2024
+  const arrCurve = [
+    480, 495, 510, 505, 498, 485, 470, 460, 455, 462, 475, 490,
+    515, 545, 570, 590, 605, 620,
+  ];
+  const params = {
+    grrBase: 94, grrVar: 1, nrrBase: 108, nrrVar: 2,
+    acvBase: 47, acvVar: 5, newLogosBase: 35, newLogosVar: 7,
+    totalAEsStart: 145, totalAEsEnd: 168, rampedBase: 0.82, rampedVar: 0.03,
+    smBase: 9000, smVar: 800, magicFloor: 0.4,
   };
   const data = [];
-  let arr = base.arrStart;
   for (let i = 0; i < 18; i++) {
-    const grr = 93 + Math.random() * 2;
-    const nrr = 106 + Math.random() * 4;
-    const churn = 100 - grr;
-    const downSell = 0.8 + Math.random() * 0.7;
-    const acv = 42 + Math.random() * 10;
-    const newLogos = Math.floor(28 + Math.random() * 14);
-    const newLogoBookings = Math.round(newLogos * acv);
-    const expansionRate = (nrr - 100 + churn) / 100;
-    const expansionBookings = Math.round(arr * expansionRate * 1000 / 12);
-    const totalBookings = newLogoBookings + expansionBookings;
-    const prevArr = arr;
-    const netNewArr = (totalBookings - prevArr * (churn / 100) * 1000 / 12) / 1000;
-    arr = Math.round((arr + netNewArr) * 10) / 10;
-    const totalAEs = Math.round(base.totalAEsStart + (base.totalAEsEnd - base.totalAEsStart) * i / 17);
-    const rampedRatio = 0.78 + Math.random() * 0.07;
-    const rampedAEs = Math.round(totalAEs * rampedRatio);
-    const smSpend = Math.round(8200 + Math.random() * 1600);
-    const magicNumber = Math.round(((netNewArr * 1000) / smSpend) * 100) / 100;
-    const cac = Math.round(smSpend / newLogos);
-    const ltv = Math.round(acv * (1 / (churn / 100 / 12)) / 12);
-    const ltvCac = Math.round((ltv / cac) * 10) / 10;
-    const payback = Math.round(cac / (acv / 12));
-    const capacityUtil = Math.round(65 + Math.random() * 20);
-    const revenuePerAE = Math.round((arr * 1000) / totalAEs);
-
-    data.push({
-      month: months[i],
-      arr: Math.round(arr * 10) / 10,
-      arrGrowthMoM: i === 0 ? 1.8 : Math.round(((arr - prevArr) / prevArr) * 1000) / 10,
-      arrGrowthYoY: i < 12 ? null : Math.round(((arr - data[i - 12].arr) / data[i - 12].arr) * 1000) / 10,
-      newLogoBookings,
-      expansionBookings,
-      totalBookings,
-      bookingsGrowthMoM: i === 0 ? 2.1 : Math.round(((totalBookings - data[i - 1].totalBookings) / data[i - 1].totalBookings) * 1000) / 10,
-      grossRetentionRate: Math.round(grr * 10) / 10,
-      churnRate: Math.round(churn * 10) / 10,
-      downSellRate: Math.round(downSell * 10) / 10,
-      netRevenueRetention: Math.round(nrr * 10) / 10,
-      expansionRate: Math.round(expansionRate * 1000) / 10,
-      acv: Math.round(acv),
-      newLogosCount: newLogos,
-      rampedAEs,
-      totalAEs,
-      salesCapacityUtilization: capacityUtil,
-      magicNumber: Math.max(0.4, magicNumber),
-      cac,
-      ltv,
-      ltvCacRatio: ltvCac,
-      paybackPeriodMonths: payback,
-      smSpend,
-      revenuePerAE,
-    });
+    const arr = arrCurve[i];
+    const prevArr = i === 0 ? 475 : arrCurve[i - 1];
+    data.push(buildMonth(i, arr, prevArr, data, params));
   }
   return data;
 }
 
 function generateSeismic() {
-  // High-growth. ARR $120M→$210M. NRR oscillates 112-118%.
+  // Consistent hypergrowth with one standout spike in Oct 2023 (big enterprise deal)
+  const arrCurve = [
+    120, 128, 137, 147, 158, 170, 182, 193, 205, 240, 255, 268,
+    282, 298, 315, 332, 350, 370,
+  ];
+  const params = {
+    grrBase: 91, grrVar: 2, nrrBase: 115, nrrVar: 3,
+    acvBase: 32, acvVar: 4, newLogosBase: 28, newLogosVar: 8,
+    totalAEsStart: 62, totalAEsEnd: 130, rampedBase: 0.65, rampedVar: 0.08,
+    smBase: 5500, smVar: 600, magicFloor: 0.5,
+  };
   const data = [];
-  let arr = 120;
   for (let i = 0; i < 18; i++) {
-    const grr = 89 + Math.random() * 4;
-    const nrr = 112 + Math.random() * 6;
-    const churn = 100 - grr;
-    const downSell = 1.2 + Math.random() * 1.0;
-    const acv = 28 + Math.random() * 8;
-    const newLogos = Math.floor(18 + i * 1.5 + Math.random() * 10);
-    const newLogoBookings = Math.round(newLogos * acv);
-    const expansionRate = (nrr - 100 + churn) / 100;
-    const expansionBookings = Math.round(arr * expansionRate * 1000 / 12);
-    const totalBookings = newLogoBookings + expansionBookings;
-    const prevArr = arr;
-    const netNewArr = (totalBookings - prevArr * (churn / 100) * 1000 / 12) / 1000;
-    arr = Math.round((arr + netNewArr) * 10) / 10;
-    const totalAEs = Math.round(62 + i * 4 + Math.random() * 3);
-    const rampedAEs = Math.round(totalAEs * (0.6 + Math.random() * 0.15));
-    const smSpend = Math.round(4800 + i * 200 + Math.random() * 800);
-    const magicNumber = Math.round(((netNewArr * 1000) / smSpend) * 100) / 100;
-    const cac = Math.round(smSpend / newLogos);
-    const ltv = Math.round(acv * (1 / (churn / 100 / 12)) / 12);
-    const ltvCac = Math.round((ltv / cac) * 10) / 10;
-    const payback = Math.round(cac / (acv / 12));
-    const capacityUtil = Math.round(55 + Math.random() * 25);
-    const revenuePerAE = Math.round((arr * 1000) / totalAEs);
-
-    data.push({
-      month: months[i],
-      arr: Math.round(arr * 10) / 10,
-      arrGrowthMoM: i === 0 ? 3.8 : Math.round(((arr - prevArr) / prevArr) * 1000) / 10,
-      arrGrowthYoY: i < 12 ? null : Math.round(((arr - data[i - 12].arr) / data[i - 12].arr) * 1000) / 10,
-      newLogoBookings,
-      expansionBookings,
-      totalBookings,
-      bookingsGrowthMoM: i === 0 ? 4.2 : Math.round(((totalBookings - data[i - 1].totalBookings) / data[i - 1].totalBookings) * 1000) / 10,
-      grossRetentionRate: Math.round(grr * 10) / 10,
-      churnRate: Math.round(churn * 10) / 10,
-      downSellRate: Math.round(downSell * 10) / 10,
-      netRevenueRetention: Math.round(nrr * 10) / 10,
-      expansionRate: Math.round(expansionRate * 1000) / 10,
-      acv: Math.round(acv),
-      newLogosCount: newLogos,
-      rampedAEs,
-      totalAEs,
-      salesCapacityUtilization: capacityUtil,
-      magicNumber: Math.max(0.5, magicNumber),
-      cac,
-      ltv,
-      ltvCacRatio: ltvCac,
-      paybackPeriodMonths: payback,
-      smSpend,
-      revenuePerAE,
-    });
+    const arr = arrCurve[i];
+    const prevArr = i === 0 ? 115 : arrCurve[i - 1];
+    data.push(buildMonth(i, arr, prevArr, data, params));
   }
   return data;
 }
 
 function generateMimecast() {
-  // Mature enterprise. ARR $380M→$420M. GRR 95-97%. NRR ~103%.
+  // Flat with a visible step-up in Apr 2023 (acquisition), then plateau
+  const arrCurve = [
+    380, 383, 385, 435, 438, 440, 442, 443, 444, 445, 446, 448,
+    450, 452, 453, 455, 456, 458,
+  ];
+  const params = {
+    grrBase: 96, grrVar: 0.8, nrrBase: 103, nrrVar: 1.5,
+    acvBase: 72, acvVar: 8, newLogosBase: 14, newLogosVar: 3,
+    totalAEsStart: 120, totalAEsEnd: 125, rampedBase: 0.88, rampedVar: 0.03,
+    smBase: 9800, smVar: 600, magicFloor: 0.3,
+  };
   const data = [];
-  let arr = 380;
   for (let i = 0; i < 18; i++) {
-    const grr = 95 + Math.random() * 2;
-    const nrr = 101.5 + Math.random() * 3;
-    const churn = 100 - grr;
-    const downSell = 0.5 + Math.random() * 0.5;
-    const acv = 65 + Math.random() * 15;
-    const newLogos = Math.floor(12 + Math.random() * 6);
-    const newLogoBookings = Math.round(newLogos * acv);
-    const expansionRate = (nrr - 100 + churn) / 100;
-    const expansionBookings = Math.round(arr * expansionRate * 1000 / 12);
-    const totalBookings = newLogoBookings + expansionBookings;
-    const prevArr = arr;
-    const netNewArr = (totalBookings - prevArr * (churn / 100) * 1000 / 12) / 1000;
-    arr = Math.round((arr + netNewArr) * 10) / 10;
-    const totalAEs = Math.round(120 + Math.random() * 5);
-    const rampedAEs = Math.round(totalAEs * (0.85 + Math.random() * 0.08));
-    const smSpend = Math.round(9500 + Math.random() * 1200);
-    const magicNumber = Math.round(((netNewArr * 1000) / smSpend) * 100) / 100;
-    const cac = Math.round(smSpend / newLogos);
-    const ltv = Math.round(acv * (1 / (churn / 100 / 12)) / 12);
-    const ltvCac = Math.round((ltv / cac) * 10) / 10;
-    const payback = Math.round(cac / (acv / 12));
-    const capacityUtil = Math.round(75 + Math.random() * 15);
-    const revenuePerAE = Math.round((arr * 1000) / totalAEs);
-
-    data.push({
-      month: months[i],
-      arr: Math.round(arr * 10) / 10,
-      arrGrowthMoM: i === 0 ? 0.6 : Math.round(((arr - prevArr) / prevArr) * 1000) / 10,
-      arrGrowthYoY: i < 12 ? null : Math.round(((arr - data[i - 12].arr) / data[i - 12].arr) * 1000) / 10,
-      newLogoBookings,
-      expansionBookings,
-      totalBookings,
-      bookingsGrowthMoM: i === 0 ? 1.0 : Math.round(((totalBookings - data[i - 1].totalBookings) / data[i - 1].totalBookings) * 1000) / 10,
-      grossRetentionRate: Math.round(grr * 10) / 10,
-      churnRate: Math.round(churn * 10) / 10,
-      downSellRate: Math.round(downSell * 10) / 10,
-      netRevenueRetention: Math.round(nrr * 10) / 10,
-      expansionRate: Math.round(expansionRate * 1000) / 10,
-      acv: Math.round(acv),
-      newLogosCount: newLogos,
-      rampedAEs,
-      totalAEs,
-      salesCapacityUtilization: capacityUtil,
-      magicNumber: Math.max(0.3, magicNumber),
-      cac,
-      ltv,
-      ltvCacRatio: ltvCac,
-      paybackPeriodMonths: payback,
-      smSpend,
-      revenuePerAE,
-    });
+    const arr = arrCurve[i];
+    const prevArr = i === 0 ? 378 : arrCurve[i - 1];
+    data.push(buildMonth(i, arr, prevArr, data, params));
   }
   return data;
 }
 
-function generateLytix() {
-  // Hyper-growth early stage. ARR $28M→$72M. NRR 115-122%.
+function generateLytx() {
+  // Exponential curve — slow start, then hockey stick from Aug 2023 onward
+  const arrCurve = [
+    28, 30, 32, 34, 37, 40, 44, 52, 62, 75, 90, 108,
+    130, 155, 185, 220, 260, 305,
+  ];
+  const params = {
+    grrBase: 89, grrVar: 2, nrrBase: 118, nrrVar: 4,
+    acvBase: 18, acvVar: 4, newLogosBase: 30, newLogosVar: 10,
+    totalAEsStart: 24, totalAEsEnd: 78, rampedBase: 0.58, rampedVar: 0.1,
+    smBase: 2800, smVar: 400, magicFloor: 0.6,
+  };
   const data = [];
-  let arr = 28;
   for (let i = 0; i < 18; i++) {
-    const grr = 87 + Math.random() * 4;
-    const nrr = 115 + Math.random() * 7;
-    const churn = 100 - grr;
-    const downSell = 1.5 + Math.random() * 1.0;
-    const acv = 15 + Math.random() * 8;
-    const newLogos = Math.floor(22 + i * 2 + Math.random() * 12);
-    const newLogoBookings = Math.round(newLogos * acv);
-    const expansionRate = (nrr - 100 + churn) / 100;
-    const expansionBookings = Math.round(arr * expansionRate * 1000 / 12);
-    const totalBookings = newLogoBookings + expansionBookings;
-    const prevArr = arr;
-    const netNewArr = (totalBookings - prevArr * (churn / 100) * 1000 / 12) / 1000;
-    arr = Math.round((arr + netNewArr) * 10) / 10;
-    const totalAEs = Math.round(24 + i * 3 + Math.random() * 3);
-    const rampedAEs = Math.round(totalAEs * (0.5 + Math.random() * 0.2));
-    const smSpend = Math.round(2200 + i * 180 + Math.random() * 500);
-    const magicNumber = Math.round(((netNewArr * 1000) / smSpend) * 100) / 100;
-    const cac = Math.round(smSpend / newLogos);
-    const ltv = Math.round(acv * (1 / (churn / 100 / 12)) / 12);
-    const ltvCac = Math.round((ltv / cac) * 10) / 10;
-    const payback = Math.round(cac / (acv / 12));
-    const capacityUtil = Math.round(50 + Math.random() * 25);
-    const revenuePerAE = Math.round((arr * 1000) / totalAEs);
-
-    data.push({
-      month: months[i],
-      arr: Math.round(arr * 10) / 10,
-      arrGrowthMoM: i === 0 ? 5.2 : Math.round(((arr - prevArr) / prevArr) * 1000) / 10,
-      arrGrowthYoY: i < 12 ? null : Math.round(((arr - data[i - 12].arr) / data[i - 12].arr) * 1000) / 10,
-      newLogoBookings,
-      expansionBookings,
-      totalBookings,
-      bookingsGrowthMoM: i === 0 ? 6.0 : Math.round(((totalBookings - data[i - 1].totalBookings) / data[i - 1].totalBookings) * 1000) / 10,
-      grossRetentionRate: Math.round(grr * 10) / 10,
-      churnRate: Math.round(churn * 10) / 10,
-      downSellRate: Math.round(downSell * 10) / 10,
-      netRevenueRetention: Math.round(nrr * 10) / 10,
-      expansionRate: Math.round(expansionRate * 1000) / 10,
-      acv: Math.round(acv),
-      newLogosCount: newLogos,
-      rampedAEs,
-      totalAEs,
-      salesCapacityUtilization: capacityUtil,
-      magicNumber: Math.max(0.6, magicNumber),
-      cac,
-      ltv,
-      ltvCacRatio: ltvCac,
-      paybackPeriodMonths: payback,
-      smSpend,
-      revenuePerAE,
-    });
+    const arr = arrCurve[i];
+    const prevArr = i === 0 ? 27 : arrCurve[i - 1];
+    data.push(buildMonth(i, arr, prevArr, data, params));
   }
   return data;
 }
 
 function generateOctus() {
-  // Mid-market compounder. ARR $95M→$145M. NRR ~111%. Magic Number > 0.8.
+  // Steady linear grower — most "boring" line but consistent
+  const arrCurve = [
+    95, 98, 101, 104, 107, 110, 113, 116, 119, 122, 125, 128,
+    131, 134, 137, 140, 143, 146,
+  ];
+  const params = {
+    grrBase: 92, grrVar: 1.5, nrrBase: 111, nrrVar: 2,
+    acvBase: 38, acvVar: 5, newLogosBase: 18, newLogosVar: 4,
+    totalAEsStart: 48, totalAEsEnd: 72, rampedBase: 0.78, rampedVar: 0.05,
+    smBase: 3800, smVar: 300, magicFloor: 0.8,
+  };
   const data = [];
-  let arr = 95;
   for (let i = 0; i < 18; i++) {
-    const grr = 91 + Math.random() * 3;
-    const nrr = 109 + Math.random() * 4;
-    const churn = 100 - grr;
-    const downSell = 0.8 + Math.random() * 0.8;
-    const acv = 35 + Math.random() * 10;
-    const newLogos = Math.floor(15 + Math.random() * 8);
-    const newLogoBookings = Math.round(newLogos * acv);
-    const expansionRate = (nrr - 100 + churn) / 100;
-    const expansionBookings = Math.round(arr * expansionRate * 1000 / 12);
-    const totalBookings = newLogoBookings + expansionBookings;
-    const prevArr = arr;
-    const netNewArr = (totalBookings - prevArr * (churn / 100) * 1000 / 12) / 1000;
-    arr = Math.round((arr + netNewArr) * 10) / 10;
-    const totalAEs = Math.round(48 + i * 1.5 + Math.random() * 3);
-    const rampedAEs = Math.round(totalAEs * (0.75 + Math.random() * 0.1));
-    const smSpend = Math.round(3600 + i * 100 + Math.random() * 600);
-    const magicNumber = Math.max(0.8, Math.round(((netNewArr * 1000) / smSpend) * 100) / 100);
-    const cac = Math.round(smSpend / newLogos);
-    const ltv = Math.round(acv * (1 / (churn / 100 / 12)) / 12);
-    const ltvCac = Math.round((ltv / cac) * 10) / 10;
-    const payback = Math.round(cac / (acv / 12));
-    const capacityUtil = Math.round(70 + Math.random() * 15);
-    const revenuePerAE = Math.round((arr * 1000) / totalAEs);
-
-    data.push({
-      month: months[i],
-      arr: Math.round(arr * 10) / 10,
-      arrGrowthMoM: i === 0 ? 2.5 : Math.round(((arr - prevArr) / prevArr) * 1000) / 10,
-      arrGrowthYoY: i < 12 ? null : Math.round(((arr - data[i - 12].arr) / data[i - 12].arr) * 1000) / 10,
-      newLogoBookings,
-      expansionBookings,
-      totalBookings,
-      bookingsGrowthMoM: i === 0 ? 3.0 : Math.round(((totalBookings - data[i - 1].totalBookings) / data[i - 1].totalBookings) * 1000) / 10,
-      grossRetentionRate: Math.round(grr * 10) / 10,
-      churnRate: Math.round(churn * 10) / 10,
-      downSellRate: Math.round(downSell * 10) / 10,
-      netRevenueRetention: Math.round(nrr * 10) / 10,
-      expansionRate: Math.round(expansionRate * 1000) / 10,
-      acv: Math.round(acv),
-      newLogosCount: newLogos,
-      rampedAEs,
-      totalAEs,
-      salesCapacityUtilization: capacityUtil,
-      magicNumber,
-      cac,
-      ltv,
-      ltvCacRatio: ltvCac,
-      paybackPeriodMonths: payback,
-      smSpend,
-      revenuePerAE,
-    });
+    const arr = arrCurve[i];
+    const prevArr = i === 0 ? 93 : arrCurve[i - 1];
+    data.push(buildMonth(i, arr, prevArr, data, params));
   }
   return data;
 }
 
 function generateMcAfee() {
-  // Large enterprise. ARR $820M→$890M. GRR 94-96%. NRR ~105%.
+  // Large base, slight decline mid-2023, recovery late 2023 into 2024
+  const arrCurve = [
+    820, 818, 815, 810, 802, 795, 788, 782, 780, 785, 795, 810,
+    828, 845, 858, 868, 878, 890,
+  ];
+  const params = {
+    grrBase: 95, grrVar: 1, nrrBase: 105, nrrVar: 1.5,
+    acvBase: 195, acvVar: 20, newLogosBase: 10, newLogosVar: 3,
+    totalAEsStart: 210, totalAEsEnd: 215, rampedBase: 0.85, rampedVar: 0.04,
+    smBase: 19000, smVar: 1500, magicFloor: 0.3,
+  };
   const data = [];
-  let arr = 820;
   for (let i = 0; i < 18; i++) {
-    const grr = 94 + Math.random() * 2;
-    const nrr = 103.5 + Math.random() * 3;
-    const churn = 100 - grr;
-    const downSell = 0.6 + Math.random() * 0.5;
-    const acv = 180 + Math.random() * 40;
-    const newLogos = Math.floor(8 + Math.random() * 5);
-    const newLogoBookings = Math.round(newLogos * acv);
-    const expansionRate = (nrr - 100 + churn) / 100;
-    const expansionBookings = Math.round(arr * expansionRate * 1000 / 12);
-    const totalBookings = newLogoBookings + expansionBookings;
-    const prevArr = arr;
-    const netNewArr = (totalBookings - prevArr * (churn / 100) * 1000 / 12) / 1000;
-    arr = Math.round((arr + netNewArr) * 10) / 10;
-    const totalAEs = Math.round(210 + Math.random() * 8);
-    const rampedAEs = Math.round(totalAEs * (0.82 + Math.random() * 0.08));
-    const smSpend = Math.round(18000 + Math.random() * 3000);
-    const magicNumber = Math.round(((netNewArr * 1000) / smSpend) * 100) / 100;
-    const cac = Math.round(smSpend / newLogos);
-    const ltv = Math.round(acv * (1 / (churn / 100 / 12)) / 12);
-    const ltvCac = Math.round((ltv / cac) * 10) / 10;
-    const payback = Math.round(cac / (acv / 12));
-    const capacityUtil = Math.round(72 + Math.random() * 15);
-    const revenuePerAE = Math.round((arr * 1000) / totalAEs);
-
-    data.push({
-      month: months[i],
-      arr: Math.round(arr * 10) / 10,
-      arrGrowthMoM: i === 0 ? 0.5 : Math.round(((arr - prevArr) / prevArr) * 1000) / 10,
-      arrGrowthYoY: i < 12 ? null : Math.round(((arr - data[i - 12].arr) / data[i - 12].arr) * 1000) / 10,
-      newLogoBookings,
-      expansionBookings,
-      totalBookings,
-      bookingsGrowthMoM: i === 0 ? 0.8 : Math.round(((totalBookings - data[i - 1].totalBookings) / data[i - 1].totalBookings) * 1000) / 10,
-      grossRetentionRate: Math.round(grr * 10) / 10,
-      churnRate: Math.round(churn * 10) / 10,
-      downSellRate: Math.round(downSell * 10) / 10,
-      netRevenueRetention: Math.round(nrr * 10) / 10,
-      expansionRate: Math.round(expansionRate * 1000) / 10,
-      acv: Math.round(acv),
-      newLogosCount: newLogos,
-      rampedAEs,
-      totalAEs,
-      salesCapacityUtilization: capacityUtil,
-      magicNumber: Math.max(0.3, magicNumber),
-      cac,
-      ltv,
-      ltvCacRatio: ltvCac,
-      paybackPeriodMonths: payback,
-      smSpend,
-      revenuePerAE,
-    });
+    const arr = arrCurve[i];
+    const prevArr = i === 0 ? 822 : arrCurve[i - 1];
+    data.push(buildMonth(i, arr, prevArr, data, params));
   }
   return data;
 }
@@ -397,7 +211,7 @@ export function getPortfolioData() {
     zendesk: generateZendesk(),
     seismic: generateSeismic(),
     mimecast: generateMimecast(),
-    lytix: generateLytix(),
+    lytx: generateLytx(),
     octus: generateOctus(),
     mcafee: generateMcAfee(),
   };

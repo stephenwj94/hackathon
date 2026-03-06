@@ -2,7 +2,7 @@ export const companies = [
   {
     name: 'Zendesk',
     slug: 'zendesk',
-    color: '#6366F1',
+    color: '#03363D',
     sector: 'Customer Experience',
     vintage: '2022',
     description: 'Customer service and engagement platform',
@@ -10,7 +10,7 @@ export const companies = [
   {
     name: 'Seismic',
     slug: 'seismic',
-    color: '#F5620F',
+    color: '#132843',
     sector: 'Sales Enablement',
     vintage: '2020',
     description: 'Sales enablement and marketing orchestration',
@@ -18,15 +18,15 @@ export const companies = [
   {
     name: 'Mimecast',
     slug: 'mimecast',
-    color: '#10B981',
+    color: '#B4065A',
     sector: 'Cybersecurity',
     vintage: '2021',
     description: 'Email security and cyber resilience',
   },
   {
-    name: 'Lytix',
-    slug: 'lytix',
-    color: '#F59E0B',
+    name: 'Lytx',
+    slug: 'lytx',
+    color: '#0057B8',
     sector: 'Data Analytics',
     vintage: '2023',
     description: 'AI-powered data analytics platform',
@@ -34,7 +34,7 @@ export const companies = [
   {
     name: 'Octus',
     slug: 'octus',
-    color: '#3B82F6',
+    color: '#00A86B',
     sector: 'Financial Intelligence',
     vintage: '2021',
     description: 'Credit intelligence and analytics',
@@ -42,7 +42,7 @@ export const companies = [
   {
     name: 'McAfee',
     slug: 'mcafee',
-    color: '#EC4899',
+    color: '#C01818',
     sector: 'Cybersecurity',
     vintage: '2021',
     description: 'Consumer and enterprise cybersecurity',
