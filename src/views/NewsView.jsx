@@ -242,21 +242,16 @@ export default function NewsView() {
         },
         body: JSON.stringify({
           model: 'claude-sonnet-4-20250514',
-          max_tokens: 4096,
+          max_tokens: 3000,
           tools: [{
             type: 'web_search_20250305',
             name: 'web_search',
-            max_uses: 10,
+            max_uses: 5,
           }],
-          system: `You are a financial research assistant for Permira, a global private equity firm.
-Search for recent news (last 30 days) about the selected portfolio companies and their competitive landscapes. Return results as JSON only, no prose.
-Format: { "articles": [ { "title": "...", "summary": "...", "company": "...", "category": "...", "source": "...", "date": "YYYY-MM-DD", "sentiment": "...", "url": "..." } ] }
-Sentiment must be one of: "positive", "neutral", "negative"
-Category must be one of: "Company News", "Competitor Activity", "End Market Trends", "M&A", "Earnings"
-Return 15-20 articles. Prioritize high-signal financial and strategic news.`,
+          system: `Financial research assistant. Search for recent news about portfolio companies. Return JSON only: {"articles":[{"title":"...","summary":"...","company":"...","category":"...","source":"...","date":"YYYY-MM-DD","sentiment":"positive|neutral|negative","url":"..."}]}. Categories: Company News, Competitor Activity, End Market Trends, M&A, Earnings. Return 8-10 articles.`,
           messages: [{
             role: 'user',
-            content: `Search for recent news about: ${companyNames.join(', ')}. Focus on: ${categoryFilter.join(', ')}. Include competitive dynamics and end market context.`,
+            content: `Recent news about: ${companyNames.join(', ')}. Focus: ${categoryFilter.join(', ')}.`,
           }],
         }),
       });
