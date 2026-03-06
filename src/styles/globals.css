@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: #F5620F #1F2937;
+  }
+  *::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  *::-webkit-scrollbar-track {
+    background: #1F2937;
+    border-radius: 3px;
+  }
+  *::-webkit-scrollbar-thumb {
+    background: #F5620F;
+    border-radius: 3px;
+  }
+  *::-webkit-scrollbar-thumb:hover {
+    background: #d4540d;
+  }
+}
+
+.stripe-motif {
+  background: repeating-linear-gradient(
+    135deg,
+    #0D1F3C,
+    #0D1F3C 4px,
+    #162845 4px,
+    #162845 8px
+  );
+}
+
+.stripe-border-left {
+  border-left: 4px solid transparent;
+  border-image: repeating-linear-gradient(
+    180deg,
+    #0D1F3C,
+    #0D1F3C 4px,
+    #162845 4px,
+    #162845 8px
+  ) 4;
+}
+
+.glass-tooltip {
+  background: rgba(17, 24, 39, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.recharts-cartesian-grid-horizontal line,
+.recharts-cartesian-grid-vertical line {
+  stroke: #1F2937;
+}
