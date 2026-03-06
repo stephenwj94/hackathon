@@ -151,6 +151,10 @@ function ErrorCard({ error, onRetry }) {
   );
 }
 
+function getStoredApiKey() {
+  return localStorage.getItem('anthropic_api_key') || '';
+}
+
 export default function NewsView() {
   const [selectedCompanies, setSelectedCompanies] = useState(['All']);
   const [selectedCategory, setSelectedCategory] = useState('All');
@@ -160,6 +164,8 @@ export default function NewsView() {
   const [lastUpdated, setLastUpdated] = useState(null);
   const cacheRef = useRef({ data: null, timestamp: 0, key: '' });
   const [now, setNow] = useState(Date.now());
+  const [apiKey, setApiKey] = useState(getStoredApiKey);
+  const [showKeyInput, setShowKeyInput] = useState(!getStoredApiKey());
 
   // Update "X minutes ago" display
   useEffect(() => {
@@ -190,10 +196,17 @@ export default function NewsView() {
     }
   };
 
+  const saveApiKey = (key) => {
+    const trimmed = key.trim();
+    setApiKey(trimmed);
+    localStorage.setItem('anthropic_api_key', trimmed);
+    setShowKeyInput(false);
+    setError(null);
+  };
+
   const fetchNews = useCallback(async () => {
-    const apiKey = import.meta.env.VITE_ANTHROPIC_API_KEY;
     if (!apiKey) {
-      setError('VITE_ANTHROPIC_API_KEY not set. Add it to your .env file.');
+      setShowKeyInput(true);
       return;
     }
 
@@ -283,11 +296,11 @@ Return 15-20 articles. Prioritize high-signal financial and strategic news.`,
     } finally {
       setLoading(false);
     }
-  }, [selectedCompanies, selectedCategory]);
+  }, [selectedCompanies, selectedCategory, apiKey]);
 
-  // Fetch on mount and when filters change
+  // Fetch on mount and when filters change (only if key is set)
   useEffect(() => {
-    fetchNews();
+    if (apiKey) fetchNews();
   }, [fetchNews]);
 
   const filteredArticles = articles.filter(a => {
@@ -335,6 +348,42 @@ Return 15-20 articles. Prioritize high-signal financial and strategic news.`,
           </button>
         </div>
       </div>
+
+      {/* API Key input */}
+      {showKeyInput && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-permira-card border border-permira-border rounded-xl p-4 mb-4"
+        >
+          <div className="text-xs uppercase tracking-widest text-permira-text-secondary mb-2">Anthropic API Key</div>
+          <p className="text-xs text-permira-text-secondary/60 mb-3">Enter your API key to fetch live news. It's stored in your browser only.</p>
+          <form onSubmit={(e) => { e.preventDefault(); saveApiKey(e.target.elements.key.value); }} className="flex gap-2">
+            <input
+              name="key"
+              type="password"
+              defaultValue={apiKey}
+              placeholder="sk-ant-api03-..."
+              className="flex-1 px-3 py-2 bg-permira-dark border border-permira-border rounded-lg text-xs font-mono text-permira-text focus:outline-none focus:ring-1 focus:ring-permira-orange/50"
+            />
+            <button type="submit" className="px-4 py-2 bg-permira-orange text-white rounded-lg text-xs font-medium hover:bg-permira-orange/90 transition-colors">
+              Save
+            </button>
+          </form>
+        </motion.div>
+      )}
+
+      {/* Change key button (when key is set but hidden) */}
+      {!showKeyInput && apiKey && (
+        <div className="flex justify-end mb-2">
+          <button
+            onClick={() => setShowKeyInput(true)}
+            className="text-[10px] text-permira-text-secondary/40 hover:text-permira-text-secondary transition-colors"
+          >
+            Change API Key
+          </button>
+        </div>
+      )}
 
       {/* Company filter pills */}
       <div className="flex flex-wrap gap-1.5 mb-3">
