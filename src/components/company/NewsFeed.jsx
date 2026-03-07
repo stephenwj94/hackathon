@@ -171,9 +171,18 @@ export default function NewsFeed({ companyName, companySlug }) {
           )}
 
           {!loading && error && !articles.length && (
-            <div className="bg-permira-card border border-permira-border/50 rounded-xl p-6 min-w-[280px] text-center">
+            <div className="bg-permira-card border border-permira-border/50 rounded-xl p-6 min-w-[320px] text-center">
               <div className="text-permira-text-secondary text-sm mb-1">Intel unavailable</div>
-              <div className="text-permira-text-secondary/60 text-xs">Check back soon</div>
+              <div className="text-permira-text-secondary/60 text-xs mb-3">{error}</div>
+              {!getApiKey() && (
+                <div className="text-xs text-permira-text-secondary/80">
+                  <p className="mb-2">Enter your API key in the browser console:</p>
+                  <code className="bg-permira-dark/80 px-2 py-1 rounded text-permira-orange text-[10px] font-mono">
+                    localStorage.setItem('anthropic_api_key', 'sk-...')
+                  </code>
+                  <p className="mt-2">Then refresh the page.</p>
+                </div>
+              )}
             </div>
           )}
 
