@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import TopBar from './TopBar';
 import Sidebar from './Sidebar';
+import CompanyTabBar from './CompanyTabBar';
 
 export default function AppShell() {
   return (
@@ -12,6 +13,7 @@ export default function AppShell() {
       className="min-h-screen bg-permira-dark"
     >
       <TopBar />
+      <CompanyTabBar />
       <div className="flex">
         <Sidebar />
         <main className="flex-1 p-6 overflow-auto">

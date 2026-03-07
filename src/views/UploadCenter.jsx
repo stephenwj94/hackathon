@@ -31,7 +31,6 @@ function generateTemplate() {
     if (f.includes('Rate') || f.includes('retention') || f.includes('Utilization')) return '95';
     if (f.includes('Growth')) return '2.5';
     if (f === 'magicNumber') return '0.85';
-    if (f === 'ltvCacRatio') return '3.5';
     return '100';
   })].join(',');
   return `${header}\n${exampleRow}`;

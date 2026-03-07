@@ -9,6 +9,10 @@ import BenchmarkChart from '../components/charts/BenchmarkChart';
 import WaterfallChart from '../components/charts/WaterfallChart';
 import RetentionHeatmap from '../components/charts/RetentionHeatmap';
 import Badge from '../components/ui/Badge';
+import NewsFeed from '../components/company/NewsFeed';
+import RetentionChart from '../components/company/RetentionChart';
+import BookingsChart from '../components/company/BookingsChart';
+import PipelineIntelligence from '../components/company/PipelineIntelligence';
 
 const trendSignals = {
   zendesk: [
@@ -17,19 +21,19 @@ const trendSignals = {
     'NRR stabilized around 108%, suggesting room for upsell optimization — particularly in the enterprise segment.',
   ],
   seismic: [
-    'High-growth trajectory with ARR nearly doubling. NRR volatility (112-118%) suggests expansion potential but requires churn monitoring.',
+    'High-growth trajectory with ARR nearly doubling. NRR volatility (112-118%) suggests expansion potential but requires monitoring.',
     'Aggressive new logo acquisition driving bookings growth, but sales capacity utilization indicates the team is still ramping — watch for productivity gains in H2 2024.',
-    'Sales & marketing efficiency trending upward as S&M spend scales. CAC payback declining — positive unit economics trajectory.',
+    'Sales & marketing efficiency trending upward as spend scales. Payback period declining — positive unit economics trajectory.',
   ],
   mimecast: [
     'Mature profile with industry-leading gross retention (95-97%). Stable but low growth — opportunity to accelerate through product-led expansion.',
     'Low expansion rate constraining NRR to ~103%. Cross-sell and upsell initiatives should be prioritized to unlock value.',
-    'High ACV and excellent retention create strong LTV/CAC ratios. Efficient but needs growth catalysts.',
+    'High ACV and excellent retention create strong economics. Efficient but needs growth catalysts.',
   ],
   lytx: [
     'Hyper-growth phase with NRR consistently above 115% — strongest expansion metrics in the portfolio.',
     'Rapid AE headcount growth (doubling over 18 months) with improving capacity utilization. Unit economics improving as team ramps.',
-    'Lower ACV offset by high logo velocity. Consider moving upmarket to improve LTV and reduce CAC payback period.',
+    'Lower ACV offset by high logo velocity. Consider moving upmarket to improve retention and reduce payback period.',
   ],
   octus: [
     'Consistent mid-market compounding with S&M efficiency above 0.8 throughout. Best-in-class sales efficiency in the portfolio.',
@@ -37,9 +41,9 @@ const trendSignals = {
     'Revenue per AE strong and improving — evidence of operating leverage as the business scales.',
   ],
   mcafee: [
-    'Large-scale enterprise with high ACV driving strong LTV. Gross retention 94-96% is solid for the security segment.',
+    'Large-scale enterprise with high ACV driving strong economics. Gross retention 94-96% is solid for the security segment.',
     'Flat new logo growth typical for enterprise scale. NRR ~105% driven primarily by price increases and cross-sell.',
-    'S&M spend efficiency could improve — S&M efficiency ratio below portfolio average, but absolute ARR contribution is the largest.',
+    'S&M spend efficiency could improve — efficiency ratio below portfolio average, but absolute ARR contribution is the largest.',
   ],
 };
 
@@ -56,11 +60,10 @@ export default function CompanyProfile() {
   const topMetrics = useMemo(() => {
     if (!latest) return [];
     return [
-      { label: 'ARR', value: latest.arr, prefix: '$', suffix: 'M', trend: latest.arrGrowthMoM },
+      { label: 'ARR', value: latest.arr, prefix: '$', suffix: 'M', trend: latest.arrGrowthMoM, trendYoY: latest.arrGrowthYoY },
       { label: 'NRR', value: latest.netRevenueRetention, suffix: '%', trend: null },
       { label: 'Gross Retention', value: latest.grossRetentionRate, suffix: '%', trend: null },
       { label: 'Sales & Marketing Efficiency', value: latest.magicNumber, decimals: 2, trend: null },
-      { label: 'LTV/CAC', value: latest.ltvCacRatio, suffix: 'x', trend: null },
       { label: 'Total AEs', value: latest.totalAEs, decimals: 0, trend: null },
     ];
   }, [latest]);
@@ -96,7 +99,7 @@ export default function CompanyProfile() {
           exit={{ opacity: 0, x: -30 }}
           transition={{ duration: 0.25 }}
         >
-          {/* Header */}
+          {/* === HEADER STRIP === */}
           <div className="bg-permira-card border border-permira-border rounded-xl overflow-hidden mb-6">
             <div className="stripe-motif h-1.5" />
             <div className="p-5">
@@ -106,19 +109,29 @@ export default function CompanyProfile() {
                 <Badge variant="orange">Vintage {company.vintage}</Badge>
               </div>
               {latest && (
-                <div className="flex items-center gap-2 text-sm text-permira-text-secondary">
+                <div className="flex items-center gap-2 text-sm text-permira-text-secondary flex-wrap">
                   <span>Latest ARR:</span>
                   <span className="font-mono font-bold text-permira-text">${latest.arr}M</span>
                   <span className={latest.arrGrowthMoM >= 0 ? 'text-permira-success' : 'text-permira-danger'}>
                     {latest.arrGrowthMoM >= 0 ? '↑' : '↓'} {Math.abs(latest.arrGrowthMoM).toFixed(1)}% MoM
                   </span>
+                  {latest.arrGrowthYoY !== null && latest.arrGrowthYoY !== undefined && (
+                    <span className={latest.arrGrowthYoY >= 0 ? 'text-permira-success' : 'text-permira-danger'}>
+                      {latest.arrGrowthYoY >= 0 ? '↑' : '↓'} {Math.abs(latest.arrGrowthYoY).toFixed(1)}% YoY
+                    </span>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
-          {/* KPI Cards */}
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 mb-6">
+          {/* === SECTION A: LATEST INTEL === */}
+          <div className="mb-6">
+            <NewsFeed companyName={company.name} companySlug={company.slug} />
+          </div>
+
+          {/* === KPI Cards === */}
+          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mb-6">
             {topMetrics.map((m, i) => (
               <KPICard
                 key={m.label}
@@ -128,13 +141,25 @@ export default function CompanyProfile() {
                 suffix={m.suffix}
                 decimals={m.decimals ?? 1}
                 trend={m.trend}
+                trendYoY={m.trendYoY}
                 delay={i * 0.05}
                 color={company.color}
               />
             ))}
           </div>
 
-          {/* Main chart with metric tabs */}
+          {/* === SECTION B: TWO CHARTS SIDE BY SIDE === */}
+          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
+            <RetentionChart data={data} />
+            <BookingsChart data={data} />
+          </div>
+
+          {/* === SECTION C: PIPELINE INTELLIGENCE === */}
+          <div className="mb-6">
+            <PipelineIntelligence companySlug={company.slug} />
+          </div>
+
+          {/* === Main chart with metric tabs === */}
           <div className="bg-permira-card border border-permira-border rounded-xl p-4 mb-6">
             <div className="flex flex-wrap gap-1 mb-4">
               {allMetrics.map(key => (
@@ -154,13 +179,13 @@ export default function CompanyProfile() {
             <BenchmarkChart singleCompany={company.slug} initialMetric={selectedMetric} />
           </div>
 
-          {/* Secondary charts */}
+          {/* === Secondary charts === */}
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
             <WaterfallChart data={data} />
             <RetentionHeatmap data={data} />
           </div>
 
-          {/* Trend Signals */}
+          {/* === Trend Signals === */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}

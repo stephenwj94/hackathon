@@ -17,9 +17,6 @@ export const benchmarks = {
   totalAEs: { label: 'Total AEs', unit: '', good: null, great: null },
   salesCapacityUtilization: { label: 'Sales Capacity', unit: '%', good: 70, great: 85 },
   magicNumber: { label: 'Sales & Marketing Efficiency', unit: '', good: 0.75, great: 1.0, bestInClass: 1.0 },
-  cac: { label: 'CAC', unit: '$K', good: 50, great: 25, inverse: true },
-  ltv: { label: 'LTV', unit: '$K', good: null, great: null },
-  ltvCacRatio: { label: 'LTV/CAC', unit: 'x', good: 3, great: 5 },
   paybackPeriodMonths: { label: 'Payback Period', unit: 'mo', good: 18, great: 12, inverse: true },
   smSpend: { label: 'S&M Spend', unit: '$K', good: null, great: null },
   revenuePerAE: { label: 'Revenue/AE', unit: '$K', good: 500, great: 800 },
@@ -28,7 +25,7 @@ export const benchmarks = {
 export const metricCategories = {
   Growth: ['arr', 'arrGrowthMoM', 'totalBookings', 'newLogosCount', 'expansionBookings'],
   Retention: ['grossRetentionRate', 'netRevenueRetention', 'churnRate', 'downSellRate'],
-  Efficiency: ['magicNumber', 'cac', 'ltvCacRatio', 'paybackPeriodMonths'],
+  Efficiency: ['magicNumber', 'paybackPeriodMonths'],
   'Sales Capacity': ['rampedAEs', 'salesCapacityUtilization', 'revenuePerAE'],
 };
 
@@ -37,7 +34,6 @@ export const healthMatrixMetrics = [
   'grossRetentionRate',
   'netRevenueRetention',
   'magicNumber',
-  'ltvCacRatio',
   'salesCapacityUtilization',
 ];
 

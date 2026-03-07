@@ -8,6 +8,8 @@ export default function CompanyCard({ company, metrics, delay = 0 }) {
   if (!metrics) return null;
 
   const isGrowthPositive = metrics.arrGrowthMoM > 0;
+  const hasYoY = metrics.arrGrowthYoY !== null && metrics.arrGrowthYoY !== undefined;
+  const isYoYPositive = hasYoY && metrics.arrGrowthYoY > 0;
 
   return (
     <motion.div
@@ -31,6 +33,13 @@ export default function CompanyCard({ company, metrics, delay = 0 }) {
               {isGrowthPositive ? '↑' : '↓'} {Math.abs(metrics.arrGrowthMoM).toFixed(1)}%
             </span>
           </div>
+          {hasYoY && (
+            <div className="text-[11px] font-mono mt-0.5" style={{ color: '#9CA3AF' }}>
+              <span className={isYoYPositive ? 'text-permira-success' : 'text-permira-danger'}>
+                {isYoYPositive ? '↑' : '↓'} {Math.abs(metrics.arrGrowthYoY).toFixed(1)}% YoY
+              </span>
+            </div>
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-2 pt-2 border-t border-permira-border">
