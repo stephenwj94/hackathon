@@ -59,18 +59,8 @@ export default function NewsFeed({ companyName, companySlug }) {
   const [error, setError] = useState(null);
   const fetchedRef = useRef(false);
 
-  const getApiKey = () => {
-    return import.meta.env.VITE_ANTHROPIC_API_KEY || localStorage.getItem('anthropic_api_key') || '';
-  };
-
   const fetchNews = useCallback(async () => {
-    const apiKey = getApiKey();
-    if (!apiKey) {
-      setError('No API key configured');
-      return;
-    }
-
-    // Check cache
+    // Check client-side cache
     const cached = newsCache[companySlug];
     if (cached && Date.now() - cached.timestamp < CACHE_DURATION) {
       setArticles(cached.data);
@@ -81,60 +71,27 @@ export default function NewsFeed({ companyName, companySlug }) {
     setError(null);
 
     try {
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 2000,
-          tools: [{
-            type: 'web_search_20250305',
-            name: 'web_search',
-            max_uses: 2,
-          }],
-          system: `Search for recent news about ${companyName}. Return ONLY valid JSON: {"articles":[{"title":"...","summary":"1-2 sentences","category":"Company News|Competitor Activity|End Market Trends|M&A|Earnings","source":"...","date":"YYYY-MM-DD","sentiment":"positive|neutral|negative","url":"..."}]}. Return exactly 5 articles.`,
-          messages: [{
-            role: 'user',
-            content: `Latest news about ${companyName}. Focus on business developments, partnerships, product launches, market trends, and competitive dynamics.`,
-          }],
-        }),
-      });
+      const response = await fetch(`/api/news?company=${companySlug}`);
 
       if (!response.ok) {
         const errData = await response.json().catch(() => ({}));
-        throw new Error(errData.error?.message || `API error: ${response.status}`);
+        throw new Error(errData.error || `API error: ${response.status}`);
       }
 
       const data = await response.json();
-      let parsed = null;
-      for (const block of data.content) {
-        if (block.type === 'text' && block.text) {
-          const jsonMatch = block.text.match(/\{[\s\S]*"articles"[\s\S]*\}/);
-          if (jsonMatch) {
-            try {
-              parsed = JSON.parse(jsonMatch[0]);
-            } catch (e) { /* continue */ }
-          }
-        }
-      }
 
-      if (parsed?.articles) {
-        setArticles(parsed.articles);
-        newsCache[companySlug] = { data: parsed.articles, timestamp: Date.now() };
+      if (data.articles?.length) {
+        setArticles(data.articles);
+        newsCache[companySlug] = { data: data.articles, timestamp: Date.now() };
       } else {
-        throw new Error('Could not parse articles');
+        throw new Error('No articles available');
       }
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
-  }, [companyName, companySlug]);
+  }, [companySlug]);
 
   useEffect(() => {
     if (!fetchedRef.current) {
@@ -173,16 +130,7 @@ export default function NewsFeed({ companyName, companySlug }) {
           {!loading && error && !articles.length && (
             <div className="bg-permira-card border border-permira-border/50 rounded-xl p-6 min-w-[320px] text-center">
               <div className="text-permira-text-secondary text-sm mb-1">Intel unavailable</div>
-              <div className="text-permira-text-secondary/60 text-xs mb-3">{error}</div>
-              {!getApiKey() && (
-                <div className="text-xs text-permira-text-secondary/80">
-                  <p className="mb-2">Enter your API key in the browser console:</p>
-                  <code className="bg-permira-dark/80 px-2 py-1 rounded text-permira-orange text-[10px] font-mono">
-                    localStorage.setItem('anthropic_api_key', 'sk-...')
-                  </code>
-                  <p className="mt-2">Then refresh the page.</p>
-                </div>
-              )}
+              <div className="text-permira-text-secondary/60 text-xs">{error}</div>
             </div>
           )}
 
