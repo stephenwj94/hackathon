@@ -2,35 +2,23 @@ import { companies, getCompanyBySlug } from './_lib/companies.js';
 import { getCachedNews, setCachedNews, getAllCachedNews } from './_lib/cache.js';
 import { fetchNewsForCompany } from './_lib/claude.js';
 
-export default async function handler(req, res) {
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  if (req.method !== 'GET') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
-  const { company } = req.query;
+export async function GET(request) {
+  const { searchParams } = new URL(request.url);
+  const company = searchParams.get('company');
 
   try {
     // Single company
     if (company) {
       const companyInfo = getCompanyBySlug(company);
       if (!companyInfo) {
-        return res.status(404).json({ error: `Unknown company: ${company}` });
+        return Response.json({ error: `Unknown company: ${company}` }, { status: 404 });
       }
 
       // Try cache first
       const cached = getCachedNews(company);
       if (cached) {
-        return res.status(200).json({
-          company: company,
+        return Response.json({
+          company,
           articles: cached.articles,
           cached: true,
           timestamp: cached.timestamp,
@@ -40,8 +28,8 @@ export default async function handler(req, res) {
       // Cache miss — fetch live
       const articles = await fetchNewsForCompany(companyInfo.name);
       const saved = setCachedNews(company, articles);
-      return res.status(200).json({
-        company: company,
+      return Response.json({
+        company,
         articles: saved.articles,
         cached: false,
         timestamp: saved.timestamp,
@@ -61,9 +49,9 @@ export default async function handler(req, res) {
       }
     }
 
-    return res.status(200).json(results);
+    return Response.json(results);
   } catch (err) {
     console.error('News API error:', err);
-    return res.status(500).json({ error: err.message });
+    return Response.json({ error: err.message }, { status: 500 });
   }
 }

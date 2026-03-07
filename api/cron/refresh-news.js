@@ -2,13 +2,13 @@ import { companies } from '../_lib/companies.js';
 import { setCachedNews } from '../_lib/cache.js';
 import { fetchNewsForCompany } from '../_lib/claude.js';
 
-export default async function handler(req, res) {
+export async function GET(request) {
   // Verify cron secret
-  const authHeader = req.headers.authorization;
+  const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
 
   if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
-    return res.status(401).json({ error: 'Unauthorized' });
+    return Response.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   console.log('Starting news refresh for all companies...');
@@ -29,5 +29,5 @@ export default async function handler(req, res) {
 
   console.log('News refresh complete:', JSON.stringify(summary));
 
-  return res.status(200).json({ refreshed: summary });
+  return Response.json({ refreshed: summary });
 }
