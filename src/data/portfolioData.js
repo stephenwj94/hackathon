@@ -12,10 +12,10 @@ function buildMonth(i, arr, prevArr, prevData, params) {
   const { grrBase, grrVar, nrrBase, nrrVar, acvBase, acvVar, newLogosBase, newLogosVar,
     totalAEsStart, totalAEsEnd, rampedBase, rampedVar, smBase, smVar, magicFloor } = params;
 
-  const grr = grrBase + Math.sin(i * 0.7) * grrVar;
-  const nrr = nrrBase + Math.sin(i * 0.9 + 1) * nrrVar;
-  const churn = 100 - grr;
+  const churn = (100 - grrBase) - Math.sin(i * 0.7) * grrVar;
   const downSell = 0.5 + Math.sin(i * 0.5) * 0.3;
+  const grr = 100 - churn - downSell;
+  const nrr = nrrBase + Math.sin(i * 0.9 + 1) * nrrVar;
   const acv = acvBase + Math.sin(i * 0.8) * acvVar;
   const newLogos = Math.floor(newLogosBase + Math.sin(i * 0.6 + 2) * newLogosVar);
   const newLogoBookings = Math.round(newLogos * acv);

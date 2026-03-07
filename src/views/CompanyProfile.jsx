@@ -73,12 +73,12 @@ export default function CompanyProfile() {
   return (
     <div>
       {/* Company selector */}
-      <div className="flex flex-wrap gap-2 mb-6">
+      <div className="flex gap-2 mb-6 overflow-x-auto pb-1 -mx-1 px-1" style={{ scrollbarWidth: 'none' }}>
         {companies.map(c => (
           <button
             key={c.slug}
             onClick={() => navigate(`/company/${c.slug}`)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all whitespace-nowrap shrink-0 min-h-[44px] ${
               c.slug === slug
                 ? 'text-white'
                 : 'bg-permira-card border border-permira-border text-permira-text-secondary hover:text-permira-text'
@@ -102,9 +102,9 @@ export default function CompanyProfile() {
           {/* === HEADER STRIP === */}
           <div className="bg-permira-card border border-permira-border rounded-xl overflow-hidden mb-6">
             <div className="stripe-motif h-1.5" />
-            <div className="p-5">
-              <div className="flex items-center gap-3 mb-1">
-                <h2 className="text-2xl font-bold">{company.name}</h2>
+            <div className="p-4 md:p-5">
+              <div className="flex items-center gap-3 mb-1 flex-wrap">
+                <h2 className="text-xl md:text-2xl font-bold">{company.name}</h2>
                 <Badge variant="default">{company.sector}</Badge>
                 <Badge variant="orange">Vintage {company.vintage}</Badge>
               </div>
@@ -125,38 +125,44 @@ export default function CompanyProfile() {
             </div>
           </div>
 
-          {/* === SECTION A: LATEST INTEL === */}
-          <div className="mb-6">
-            <NewsFeed companyName={company.name} companySlug={company.slug} />
-          </div>
+          {/* === TWO-COLUMN LAYOUT: Intel (left) + Content (right) === */}
+          <div className="flex flex-col lg:flex-row gap-4 mb-6">
+            {/* Left: Intel panel */}
+            <div className="w-full lg:w-[30%] max-lg:max-h-[280px] lg:self-start lg:sticky lg:top-4">
+              <div className="lg:h-[calc(100vh-220px)] max-lg:h-full">
+                <NewsFeed companyName={company.name} companySlug={company.slug} />
+              </div>
+            </div>
 
-          {/* === KPI Cards === */}
-          <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3 mb-6">
-            {topMetrics.map((m, i) => (
-              <KPICard
-                key={m.label}
-                label={m.label}
-                value={m.value}
-                prefix={m.prefix}
-                suffix={m.suffix}
-                decimals={m.decimals ?? 1}
-                trend={m.trend}
-                trendYoY={m.trendYoY}
-                delay={i * 0.05}
-                color={company.color}
-              />
-            ))}
-          </div>
+            {/* Right: Main content */}
+            <div className="flex-1 min-w-0 space-y-6">
+              {/* KPI Cards */}
+              <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-5 gap-3">
+                {topMetrics.map((m, i) => (
+                  <KPICard
+                    key={m.label}
+                    label={m.label}
+                    value={m.value}
+                    prefix={m.prefix}
+                    suffix={m.suffix}
+                    decimals={m.decimals ?? 1}
+                    trend={m.trend}
+                    trendYoY={m.trendYoY}
+                    delay={i * 0.05}
+                    color={company.color}
+                  />
+                ))}
+              </div>
 
-          {/* === SECTION B: TWO CHARTS SIDE BY SIDE === */}
-          <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 mb-6">
-            <RetentionChart data={data} />
-            <BookingsChart data={data} />
-          </div>
+              {/* Charts */}
+              <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
+                <RetentionChart data={data} companySlug={company.slug} companyColor={company.color} />
+                <BookingsChart data={data} companySlug={company.slug} companyColor={company.color} />
+              </div>
 
-          {/* === SECTION C: PIPELINE INTELLIGENCE === */}
-          <div className="mb-6">
-            <PipelineIntelligence companySlug={company.slug} />
+              {/* Pipeline Intelligence */}
+              <PipelineIntelligence companySlug={company.slug} />
+            </div>
           </div>
 
           {/* === Main chart with metric tabs === */}

@@ -55,3 +55,19 @@
 .recharts-cartesian-grid-vertical line {
   stroke: #1F2937;
 }
+
+/* Thin intel panel scrollbar */
+.intel-scroll::-webkit-scrollbar {
+  width: 2px;
+}
+.intel-scroll::-webkit-scrollbar-track {
+  background: #111827;
+}
+.intel-scroll::-webkit-scrollbar-thumb {
+  background: #F5620F;
+  border-radius: 1px;
+}
+.intel-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: #F5620F #111827;
+}
